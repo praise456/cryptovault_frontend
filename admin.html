@@ -1,74 +1,369 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8" />
   <title>Admin Panel</title>
-  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --primary: #2d89ef;
+      --primary-dark: #1b5fa7;
+      --bg: #f7f9fc;
+      --text: #333;
+      --border: #ddd;
+      --success: #28a745;
+      --danger: #dc3545;
+      --radius: 6px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: var(--primary-dark);
+    }
+
+    button {
+      background-color: var(--primary);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background-color: #eef3fa;
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background-color: #f1f7ff;
+    }
+
+    input[type="number"] {
+      padding: 6px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      width: 80px;
+    }
+
+    .small {
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .status-btn {
+      background-color: var(--success);
+      margin-left: 6px;
+    }
+
+    .status-btn:hover {
+      background-color: #1e7e34;
+    }
+
+    .danger {
+      background-color: var(--danger);
+    }
+
+    .danger:hover {
+      background-color: #a71d2a;
+    }
+
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      }
+
+      td {
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      td:last-child {
+        border-bottom: none;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        color: var(--primary-dark);
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Admin Dashboard</h2>
-  <p>Welcome, Admin</p>
+  <header>
+    <h2>Admin Dashboard</h2>
+    <p>Welcome, Admin</p>
+  </header>
 
-  <h3>All Users</h3>
-  <button onclick="fetchUsers()">Load Users</button>
-  <table border="1" id="userTable">
-    <thead><tr><th>Email</th><th>Balance</th><th>Investments</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <main>
+    <h3>All Users</h3>
+    <button id="loadUsersBtn">Load Users</button>
+    <table id="userTable" aria-live="polite">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Balance</th>
+          <th>Investments</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
 
   <script>
-    async function fetchUsers() {
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/users", {
-        headers: { Authorization: token }
-      });
-      const data = await res.json();
+   
+  <script>
+  // ---------- Config ----------
+  const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // no trailing slash
 
-      const rows = data.users.map((u, index) => {
-        const invests = (u.investments || []).map((inv, i) =>
-          \`<div>
-            [\${i}] \${inv.plan} - \$\${inv.amount} @ \${inv.rate}% - \${inv.status}
-            <button onclick="updateStatus('\${u._id}', \${i}, 'completed')">Complete</button>
-          </div>\`).join("");
+  function joinUrl(base, path) {
+    return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+  }
 
-        return \`
-          <tr>
-            <td>\${u.email}</td>
-            <td>\$ \${u.balance || 0}</td>
-            <td>\${invests}</td>
-            <td>
-              <input type="number" id="amt\${index}" placeholder="Amount" />
-              <button onclick="creditUser('\${u._id}', \${index})">Credit</button>
-            </td>
-          </tr>
-        \`;
-      }).join("");
-      document.querySelector("#userTable tbody").innerHTML = rows;
+  function authHeaders(token) {
+    return { 'Content-Type': 'application/json', 'x-auth-token': token };
+  }
+
+  // ---------- Helpers ----------
+  function el(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+    return template.content.firstChild;
+  }
+
+  function showAlert(msg) {
+    // simple alert for now — replace with nicer UI as needed
+    alert(msg);
+  }
+
+  // ---------- Fetch wrapper (shows helpful error) ----------
+  async function fetchJson(url, options = {}) {
+    try {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { msg: text }; }
+      if (!res.ok) {
+        const msg = data.msg || data.error || `Request failed (${res.status})`;
+        const err = new Error(msg);
+        err.status = res.status;
+        err.body = data;
+        throw err;
+      }
+      return data;
+    } catch (err) {
+      console.error('fetchJson error:', err);
+      throw err;
     }
+  }
 
-    async function creditUser(userId, i) {
-      const token = localStorage.getItem("token");
-      const amt = document.getElementById("amt" + i).value;
-      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/credit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: token },
-        body: JSON.stringify({ userId, amount: amt })
+  // ---------- Render users ----------
+  async function fetchUsers() {
+    const token = localStorage.getItem('token');
+    if (!token) return showAlert('No auth token found. Please login.');
+
+    const url = joinUrl(API_BASE, '/api/admin/users');
+    try {
+      const data = await fetchJson(url, { headers: authHeaders(token) });
+      renderUserTable(data.users || []);
+    } catch (err) {
+      showAlert(err.message || 'Failed to load users');
+    }
+  }
+
+  function renderUserTable(users) {
+    const tbody = document.querySelector('#userTable tbody');
+    tbody.innerHTML = ''; // clear
+
+    users.forEach((u, userIndex) => {
+      const tr = document.createElement('tr');
+
+      // Email
+      const tdEmail = document.createElement('td');
+      tdEmail.textContent = u.email || '(no email)';
+      tr.appendChild(tdEmail);
+
+      // Balance
+      const tdBal = document.createElement('td');
+      tdBal.textContent = `$${(u.balance || 0).toFixed ? u.balance.toFixed(2) : (u.balance || 0)}`;
+      tr.appendChild(tdBal);
+
+      // Investments column
+      const tdInv = document.createElement('td');
+      tdInv.className = 'small';
+      if (Array.isArray(u.investments) && u.investments.length) {
+        u.investments.forEach((inv, invIndex) => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <strong>[${invIndex}] ${inv.plan || '—'}</strong>
+            — $${inv.amount || 0} @ ${inv.rate || 0}% — ${inv.status || 'n/a'}
+            <button data-action="complete" data-user="${u._id}" data-index="${invIndex}">Complete</button>
+          `;
+          tdInv.appendChild(div);
+        });
+      } else {
+        tdInv.textContent = 'No investments';
+      }
+      tr.appendChild(tdInv);
+
+      // Actions: credit input + button
+      const tdAct = document.createElement('td');
+      tdAct.innerHTML = `
+        <input type="number" step="0.01" min="0" placeholder="Amount" data-amt-for="${u._id}" />
+        <button data-action="credit" data-user="${u._id}">Credit</button>
+      `;
+      tr.appendChild(tdAct);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- Event delegation for actions ----------
+  document.querySelector('#userTable tbody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+
+    const action = btn.getAttribute('data-action');
+    const userId = btn.getAttribute('data-user');
+
+    if (action === 'credit') {
+      // find the input near the button
+      const input = btn.parentElement.querySelector(`input[data-amt-for="${userId}"]`);
+      const val = input && input.value;
+      const amount = parseFloat(val);
+      if (isNaN(amount) || amount <= 0) {
+        return showAlert('Enter a valid amount to credit');
+      }
+      await creditUser(userId, amount);
+    } else if (action === 'complete') {
+      const invIndex = parseInt(btn.getAttribute('data-index'), 10);
+      if (Number.isNaN(invIndex)) return showAlert('Bad investment index');
+      await updateStatus(userId, invIndex, 'completed');
+    }
+  });
+
+  // ---------- Admin actions ----------
+  async function creditUser(userId, amount) {
+    const token = localStorage.getItem('token');
+    if (!token) return showAlert('Not authenticated');
+
+    const url = joinUrl(API_BASE, '/api/admin/credit');
+    try {
+      const body = { userId, amount };
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify(body),
       });
-      const data = await res.json();
-      alert(data.msg);
+      showAlert(data.msg || 'Credited successfully');
+      fetchUsers();
+    } catch (err) {
+      showAlert(err.message || 'Credit failed');
+    }
+  }
+
+  async function updateStatus(userId, investIndex, newStatus) {
+    const token = localStorage.getItem('token');
+    if (!token) return showAlert('Not authenticated');
+
+    const url = joinUrl(API_BASE, '/api/admin/status');
+    try {
+      const body = { userId, investIndex, newStatus };
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify(body),
+      });
+      showAlert(data.msg || 'Status updated');
+      fetchUsers();
+    } catch (err) {
+      showAlert(err.message || 'Status update failed');
+    }
+  }
+
+  // ---------- Bind load button ----------
+  document.getElementById('loadUsersBtn').addEventListener('click', fetchUsers);
+
+  // Optional: auto-load on page open if token present
+  window.addEventListener('load', () => {
+    if (localStorage.getItem('token')) {
       fetchUsers();
     }
+  });
 
-    async function updateStatus(userId, index, newStatus) {
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: token },
-        body: JSON.stringify({ userId, investIndex: index, newStatus })
-      });
-      const data = await res.json();
-      alert(data.msg);
-      fetchUsers();
-    }
+  </script>
   </script>
 </body>
 </html>
