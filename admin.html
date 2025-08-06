@@ -12,374 +12,379 @@
       --text: #222;
       --border: #ccc;
       --black: #000;
-      --radius: 6px;
+      --radius: 8px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      -webkit-font-smoothing: antialiased;
     }
 
     header {
       background-color: var(--black);
       color: var(--primary);
-      padding: 16px;
-      text-align: center;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+    header .left { display:flex; align-items:center; gap:12px; }
+    header h2 { margin: 0; font-size: 1.3rem; }
+    header .subtitle { color: #bbb; font-size: 0.9rem; }
 
-    header h2 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-
-    header p {
-      margin: 4px 0 0;
-      font-size: 1rem;
-      color: #bbb;
-    }
-
-    main {
+    .container {
       padding: 20px;
-      max-width: 1100px;
-      margin: auto;
+      max-width: 1200px;
+      margin: 18px auto;
     }
 
-    h3 {
-      margin-top: 0;
-      color: var(--black);
-      border-left: 4px solid var(--primary);
-      padding-left: 8px;
-    }
+    .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
 
     button {
       background-color: var(--primary);
       border: none;
       color: var(--black);
-      font-weight: bold;
-      padding: 8px 14px;
+      font-weight: 600;
+      padding: 8px 12px;
       border-radius: var(--radius);
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
+      transition: all 120ms ease;
+    }
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button.danger { background: #d32f2f; color: white; }
+    button.small { padding:6px 8px; font-size:0.9rem; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+    input[type="number"], input[type="text"], select {
+      padding:8px;
+      border-radius:6px;
+      border:1px solid var(--border);
+      font-size:0.95rem;
     }
 
-    button:hover {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    h3 { color: var(--black); border-left: 4px solid var(--primary); padding-left:10px; margin-top:22px; }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      margin-top: 12px;
       background: white;
       border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-
     th, td {
-      padding: 12px;
+      padding: 12px 10px;
       border-bottom: 1px solid var(--border);
       text-align: left;
+      vertical-align: top;
     }
-
     th {
       background-color: var(--black);
       color: var(--primary);
-      font-weight: 600;
+      font-weight: 700;
     }
+    tr:hover td { background: #e8f5e9; }
 
-    tr:hover td {
-      background-color: #e8f5e9;
-    }
+    .small { font-size: 0.9rem; color:#444; }
+    .muted { color: #666; font-size:0.9rem; }
 
-    input[type="number"] {
-      padding: 6px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      width: 80px;
-    }
-
-    .small {
-      font-size: 0.85rem;
-      color: #555;
-    }
-
-    .status-btn {
-      background-color: var(--primary);
-      margin-left: 6px;
-    }
-
-    .status-btn:hover {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-
-    .danger {
-      background-color: red;
-      color: white;
-    }
-
-    .danger:hover {
-      background-color: darkred;
-    }
-
-    @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-
-      thead {
-        display: none;
-      }
-
-      tr {
-        margin-bottom: 10px;
-        background: white;
-        border-radius: var(--radius);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-
-      td {
-        padding: 10px;
-        border-bottom: 1px solid var(--border);
-      }
-
-      td:last-child {
-        border-bottom: none;
-      }
-
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        display: block;
-        color: var(--primary-dark);
-      }
+    @media (max-width: 900px) {
+      header { padding:12px; flex-direction:column; align-items:flex-start; gap:8px; }
+      .toolbar { flex-direction:column; align-items:flex-start; gap:8px; }
+      th, td { padding:10px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h2>Admin Dashboard</h2>
-    <p>Welcome, Admin</p>
+    <div class="left">
+      <h2>Admin Dashboard</h2>
+      <div class="subtitle">Manage users, investments & withdrawals</div>
+    </div>
+    <div>
+      <button id="logoutBtn" class="small">Logout</button>
+    </div>
   </header>
 
-  <main>
-    <h3>All Users</h3>
-    <button id="loadUsersBtn">Load Users</button>
+  <div class="container">
+    <!-- Users -->
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <h3>All Users</h3>
+      <div class="toolbar" style="margin:0;">
+        <label class="muted">Page:</label>
+        <input id="pageInput" type="number" value="1" min="1" style="width:80px"/>
+        <label class="muted">Limit:</label>
+        <input id="limitInput" type="number" value="50" min="1" max="500" style="width:90px"/>
+        <button id="loadUsersBtn">Load Users</button>
+      </div>
+    </div>
+
     <table id="userTable" aria-live="polite">
       <thead>
-        <tr>
-          <th>Email</th>
-          <th>Balance</th>
-          <th>Investments</th>
-          <th>Actions</th>
-        </tr>
+        <tr><th>Email</th><th>Balance</th><th>Investments</th><th>Withdrawals</th><th>Actions</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-    <h3>Pending Withdrawals</h3>
-<button onclick="loadWithdrawals()">Load Withdrawals</button>
-<table border="1" id="adminWithdrawTable">
-  <thead><tr><th>User</th><th>Coin</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-  <tbody></tbody>
-</table>
 
-  </main>
+    <!-- Withdrawals -->
+    <h3 style="margin-top:28px;">Pending Withdrawals</h3>
+    <div class="toolbar">
+      <button id="loadWithdrawalsBtn">Load Withdrawals</button>
+      <div class="muted">Reload to update statuses after action</div>
+    </div>
+    <table id="adminWithdrawTable">
+      <thead>
+        <tr><th>User</th><th>Coin</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- Note -->
+    <p class="muted" style="margin-top:14px;">Tip: Ensure you are logged in as an admin account (role: "admin").</p>
+  </div>
 
   <script>
-    const API_BASE = 'https://crypto-backend-t3bz.onrender.com';
+  const API_BASE = 'https://crypto-backend-t3bz.onrender.com';
 
-    function joinUrl(base, path) {
-      return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
-    }
+  function joinUrl(base, path) {
+    return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+  }
 
-    function authHeaders(token) {
-      return { 'Content-Type': 'application/json', 'x-auth-token': token };
-    }
+  function authHeaders(token) {
+    return { 'Content-Type': 'application/json', 'x-auth-token': token };
+  }
 
-    async function fetchJson(url, options = {}) {
-      try {
-        const res = await fetch(url, options);
-        const text = await res.text();
-        let data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { msg: text }; }
-        if (!res.ok) {
-          const msg = data.msg || data.error || `Request failed (${res.status})`;
-          const err = new Error(msg);
-          err.status = res.status;
-          err.body = data;
-          throw err;
-        }
-        return data;
-      } catch (err) {
-        console.error('fetchJson error:', err);
+  async function fetchJson(url, options = {}) {
+    try {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { msg: text }; }
+      if (!res.ok) {
+        const msg = data.msg || data.error || `Request failed (${res.status})`;
+        const err = new Error(msg);
+        err.status = res.status;
+        err.body = data;
         throw err;
       }
+      return data;
+    } catch (err) {
+      console.error('fetchJson error:', err);
+      throw err;
     }
+  }
 
-    async function fetchUsers() {
-      const token = localStorage.getItem('token');
-      if (!token) return alert('No auth token found. Please login.');
+  // ---------- Users ----------
+  async function fetchUsers() {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('No auth token found. Please login.');
 
-      const url = joinUrl(API_BASE, '/api/admin/users');
-      try {
-        const data = await fetchJson(url, { headers: authHeaders(token) });
-        renderUserTable(data.users || []);
-      } catch (err) {
-        alert(err.message || 'Failed to load users');
-      }
+    const page = Number(document.getElementById('pageInput').value) || 1;
+    const limit = Number(document.getElementById('limitInput').value) || 50;
+    const url = joinUrl(API_BASE, `/api/admin/users?page=${page}&limit=${limit}`);
+
+    try {
+      const data = await fetchJson(url, { headers: authHeaders(token) });
+      renderUserTable(data.users || []);
+    } catch (err) {
+      alert(`Failed to load users: ${err.message}`);
     }
+  }
 
-    function renderUserTable(users) {
-      const tbody = document.querySelector('#userTable tbody');
-      tbody.innerHTML = '';
-      users.forEach((u) => {
+  function renderUserTable(users) {
+    const tbody = document.querySelector('#userTable tbody');
+    tbody.innerHTML = '';
+    users.forEach((u, index) => {
+      const tr = document.createElement('tr');
+
+      const investmentsHtml = (u.investments || []).map((inv,i) =>
+        `<div class="small">
+           <strong>[${i}] ${inv.plan || '—'}</strong> — $${inv.amount || 0} @ ${inv.rate||0}% — ${inv.status||'n/a'}
+           <button data-action="complete" data-user="${u._id}" data-index="${i}" class="small">Complete</button>
+         </div>`
+      ).join('');
+
+      const withdrawalsHtml = (u.withdrawals || []).map(w =>
+        `<div class="small">${w.coin} — ${w.amount} — ${w.status}</div>`
+      ).join('') || '<span class="muted">No withdrawals</span>';
+
+      tr.innerHTML = `
+        <td>${u.email || '(no email)'}</td>
+        <td>$${(u.balance || 0).toFixed ? u.balance.toFixed(2) : (u.balance || 0)}</td>
+        <td>${investmentsHtml || '<span class="muted">No investments</span>'}</td>
+        <td>${withdrawalsHtml}</td>
+        <td>
+          <input type="number" step="0.01" min="0" placeholder="Amount" data-amt-for="${u._id}" style="width:110px; margin-bottom:6px;"/>
+          <br/>
+          <button data-action="credit" data-user="${u._id}" class="small">Credit</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Event delegation for user actions (credit / complete)
+  document.querySelector('#userTable tbody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+
+    const action = btn.getAttribute('data-action');
+    const userId = btn.getAttribute('data-user');
+
+    if (action === 'credit') {
+      const input = document.querySelector(`input[data-amt-for="${userId}"]`);
+      const amount = Number(input?.value);
+      if (isNaN(amount) || amount <= 0) return alert('Enter a valid amount to credit');
+      await creditUser(userId, amount);
+    } else if (action === 'complete') {
+      const invIndex = Number(btn.getAttribute('data-index'));
+      if (!Number.isInteger(invIndex)) return alert('Invalid investment index');
+      await updateStatus(userId, invIndex, 'completed');
+    }
+  });
+
+  async function creditUser(userId, amount) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Not authenticated');
+
+    try {
+      const url = joinUrl(API_BASE, '/api/admin/credit');
+      const body = { userId, amount };
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify(body)
+      });
+      alert(data.msg || 'Credited successfully');
+      fetchUsers();
+    } catch (err) {
+      alert(err.message || 'Credit failed');
+    }
+  }
+
+  async function updateStatus(userId, investIndex, newStatus) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Not authenticated');
+
+    try {
+      const url = joinUrl(API_BASE, '/api/admin/status');
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({ userId, investIndex, newStatus })
+      });
+      alert(data.msg || 'Status updated');
+      fetchUsers();
+    } catch (err) {
+      alert(err.message || 'Status update failed');
+    }
+  }
+
+  // ---------- Withdrawals (admin) ----------
+  async function loadWithdrawals() {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('No admin token');
+
+    try {
+      const url = joinUrl(API_BASE, '/api/admin/withdrawals');
+      const data = await fetchJson(url, { headers: authHeaders(token) });
+      renderWithdrawalsTable(data.users || []);
+    } catch (err) {
+      alert('Failed to load withdrawals: ' + err.message);
+    }
+  }
+
+  function renderWithdrawalsTable(users) {
+    const tbody = document.querySelector('#adminWithdrawTable tbody');
+    tbody.innerHTML = '';
+    let any = false;
+    users.forEach(user => {
+      (user.withdrawals || []).forEach((w, idx) => {
+        any = true;
         const tr = document.createElement('tr');
-
         tr.innerHTML = `
-          <td data-label="Email">${u.email || '(no email)'}</td>
-          <td data-label="Balance">$${(u.balance || 0).toFixed ? u.balance.toFixed(2) : (u.balance || 0)}</td>
-          <td data-label="Investments" class="small">
-            ${Array.isArray(u.investments) && u.investments.length
-              ? u.investments.map((inv, i) => `
-                  <div>
-                    <strong>[${i}] ${inv.plan || '—'}</strong>
-                    — $${inv.amount || 0} @ ${inv.rate || 0}% — ${inv.status || 'n/a'}
-                    <button class="status-btn" data-action="complete" data-user="${u._id}" data-index="${i}">Complete</button>
-                  </div>
-                `).join('')
-              : 'No investments'}
-          </td>
-          <td data-label="Actions">
-            <input type="number" step="0.01" min="0" placeholder="Amount" data-amt-for="${u._id}" />
-            <button data-action="credit" data-user="${u._id}">Credit</button>
+          <td>${user.email}</td>
+          <td>${w.coin}</td>
+          <td>${w.amount}</td>
+          <td>${w.status}</td>
+          <td>${new Date(w.date).toLocaleString()}</td>
+          <td>
+            ${w.status === 'pending' ? `
+              <button class="small" data-user="${user._id}" data-index="${idx}" data-action="approve">Approve</button>
+              <button class="small danger" data-user="${user._id}" data-index="${idx}" data-action="reject">Reject</button>
+            ` : '<span class="muted">No actions</span>'}
           </td>
         `;
         tbody.appendChild(tr);
       });
-    }
-
-    document.querySelector('#userTable tbody').addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-
-      const action = btn.getAttribute('data-action');
-      const userId = btn.getAttribute('data-user');
-
-      if (action === 'credit') {
-        const input = document.querySelector(`input[data-amt-for="${userId}"]`);
-        const amount = parseFloat(input.value);
-        if (isNaN(amount) || amount <= 0) return alert('Enter a valid amount to credit');
-        await creditUser(userId, amount);
-      } else if (action === 'complete') {
-        const invIndex = parseInt(btn.getAttribute('data-index'), 10);
-        if (Number.isNaN(invIndex)) return alert('Bad investment index');
-        await updateStatus(userId, invIndex, 'completed');
-      }
     });
-
-    async function creditUser(userId, amount) {
-      const token = localStorage.getItem('token');
-      if (!token) return alert('Not authenticated');
-
-      const url = joinUrl(API_BASE, '/api/admin/credit');
-      try {
-        const body = { userId, amount };
-        const data = await fetchJson(url, {
-          method: 'POST',
-          headers: authHeaders(token),
-          body: JSON.stringify(body),
-        });
-        alert(data.msg || 'Credited successfully');
-        fetchUsers();
-      } catch (err) {
-        alert(err.message || 'Credit failed');
-      }
-    }
-
-    async function updateStatus(userId, investIndex, newStatus) {
-      const token = localStorage.getItem('token');
-      if (!token) return alert('Not authenticated');
-
-      const url = joinUrl(API_BASE, '/api/admin/status');
-      try {
-        const body = { userId, investIndex, newStatus };
-        const data = await fetchJson(url, {
-          method: 'POST',
-          headers: authHeaders(token),
-          body: JSON.stringify(body),
-        });
-        alert(data.msg || 'Status updated');
-        fetchUsers();
-      } catch (err) {
-        alert(err.message || 'Status update failed');
-      }
-    }
-
-    document.getElementById('loadUsersBtn').addEventListener('click', fetchUsers);
-
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('token')) fetchUsers();
-    });
-
-   async function loadWithdrawals() {
-  const token = localStorage.getItem('token');
-  if (!token) { alert('No admin token'); return; }
-
-  try {
-    const res = await fetch('https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals', {
-      headers: { 'x-auth-token': token }
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      console.error('Admin withdrawals fetch failed', res.status, txt);
-      alert('Failed to load withdrawals: ' + (res.status === 403 ? 'Not an admin' : res.status));
-      return;
-    }
-
-    const data = await res.json();
-    const tbody = document.querySelector('#adminWithdrawTable tbody');
-    let rows = '';
-    (data.users || []).forEach(user => {
-      (user.withdrawals || []).forEach((w, idx) => {
-        rows += `
-          <tr>
-            <td>${user.email}</td>
-            <td>${w.coin}</td>
-            <td>${w.amount}</td>
-            <td>${w.status}</td>
-            <td>
-              ${w.status === 'pending' ? `
-                <button onclick="updateWithdrawal('${user._id}', ${idx}, 'approved')">Approve</button>
-                <button onclick="updateWithdrawal('${user._id}', ${idx}, 'rejected')">Reject</button>
-              ` : ''}
-            </td>
-          </tr>`;
-      });
-    });
-    tbody.innerHTML = rows || '<tr><td colspan="5">No withdrawals</td></tr>';
-  } catch (err) {
-    console.error('loadWithdrawals error', err);
-    alert('Network error loading withdrawals');
+    if (!any) tbody.innerHTML = '<tr><td colspan="6" class="muted">No withdrawals</td></tr>';
   }
-}
+
+  // delegation for withdraw actions
+  document.querySelector('#adminWithdrawTable tbody').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const userId = btn.getAttribute('data-user');
+    const index = Number(btn.getAttribute('data-index'));
+    if (action === 'approve') {
+      await updateWithdrawal(userId, index, 'approved');
+    } else if (action === 'reject') {
+      await updateWithdrawal(userId, index, 'rejected');
+    }
+  });
+
+  async function updateWithdrawal(userId, index, status) {
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Not authenticated');
+    try {
+      const url = joinUrl(API_BASE, '/api/admin/withdrawals/update');
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({ userId, index, status })
+      });
+      alert(data.msg || `Withdrawal ${status}`);
+      loadWithdrawals();
+      // also refresh users to update balances/withdrawals shown
+      fetchUsers();
+    } catch (err) {
+      alert('Action failed: ' + err.message);
+    }
+  }
+
+  // ---------- Auth helpers ----------
+  function logout() {
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+  document.getElementById('loadUsersBtn').addEventListener('click', fetchUsers);
+  document.getElementById('loadWithdrawalsBtn').addEventListener('click', loadWithdrawals);
+
+  // auto-load if token exists
+  window.addEventListener('load', () => {
+    if (localStorage.getItem('token')) {
+      fetchUsers();
+      loadWithdrawals();
+    } else {
+      // optionally redirect to login page
+      // window.location.href = 'login.html';
+      console.warn('No token found in localStorage.');
+    }
+  });
   </script>
 </body>
 </html>
-
