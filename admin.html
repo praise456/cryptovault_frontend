@@ -18,7 +18,7 @@
   <script>
     async function fetchUsers() {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/users", {
+      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/users", {
         headers: { Authorization: token }
       });
       const data = await res.json();
@@ -48,7 +48,7 @@
     async function creditUser(userId, i) {
       const token = localStorage.getItem("token");
       const amt = document.getElementById("amt" + i).value;
-      const res = await fetch("http://localhost:5000/api/admin/credit", {
+      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/credit", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: token },
         body: JSON.stringify({ userId, amount: amt })
@@ -60,7 +60,7 @@
 
     async function updateStatus(userId, index, newStatus) {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/status", {
+      const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/admin/status", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: token },
         body: JSON.stringify({ userId, investIndex: index, newStatus })
