@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     (async () => {
       try {
-        const res = await fetchWithTimeout(`${API_BASE}/api/user`, {
+        const res = await fetchWithTimeout(`${API_BASE}/user`, {
           headers: { "x-auth-token": token },
         });
         const data = await safeJson(res);
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setLoading(submitBtn, true);
         try {
-          const res = await fetchWithTimeout(`${API_BASE}/api/user/invest`, {
+          const res = await fetchWithTimeout(`${API_BASE}/user/invest`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
