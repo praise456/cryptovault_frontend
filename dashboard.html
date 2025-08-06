@@ -80,7 +80,7 @@ async function deposit() {
   const coin = document.getElementById("coin").value;
   const amount = document.getElementById("amount").value;
   const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:5000/api/wallet/deposit", {
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/wallet/deposit", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: token },
     body: JSON.stringify({ coin, amount })
@@ -95,7 +95,7 @@ async function deposit() {
 
 async function loadWallet() {
   const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:5000/api/wallet/history", {
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/wallet/history", {
     headers: { Authorization: token }
   });
   const data = await res.json();
@@ -149,7 +149,7 @@ async function createInvestment() {
   const duration = document.getElementById("duration").value;
   const rate = document.getElementById("rate").value;
 
-  const res = await fetch("http://localhost:5000/api/investments/create", {
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/investments/create", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: token },
     body: JSON.stringify({ plan, amount, duration, rate })
@@ -161,7 +161,7 @@ async function createInvestment() {
 
 async function loadInvestments() {
   const token = localStorage.getItem("token");
-  const res = await fetch("http://localhost:5000/api/investments", {
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com//api/investments", {
     headers: { Authorization: token }
   });
   const data = await res.json();
