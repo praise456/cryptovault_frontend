@@ -89,7 +89,26 @@
     </thead>
     <tbody></tbody>
   </table>
+!-- Withdrawal Form -->
+<section class="withdraw">
+  <h3>💸 Request Withdrawal</h3>
+  <select id="withdrawCoin">
+    <option value="BTC">BTC</option>
+    <option value="ETH">ETH</option>
+    <option value="USDT">USDT</option>
+  </select>
+  <input type="number" id="withdrawAmount" placeholder="Amount" min="1"/>
+  <button onclick="requestWithdrawal()">Request</button>
+  <p id="withdrawMsg"></p>
+</section>
 
+<!-- Withdrawal History -->
+<h3>Your Withdrawals</h3>
+<table border="1" id="withdrawTable">
+  <thead><tr><th>Coin</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody></tbody>
+</table>
+  
   <script>
   // --------- Config & helpers ----------
   const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // no trailing slash
@@ -294,6 +313,41 @@
     loadWallet();
     loadInvestments();
   });
+
+    async function requestWithdrawal() {
+  const token = localStorage.getItem("token");
+  const coin = document.getElementById("withdrawCoin").value;
+  const amount = document.getElementById("withdrawAmount").value;
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/wallet/withdraw-request", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-auth-token": token },
+    body: JSON.stringify({ coin, amount })
+  });
+  const data = await res.json();
+  document.getElementById("withdrawMsg").innerText = data.msg || data.error;
+  loadWithdrawals();
+}
+
+async function loadWithdrawals() {
+  const token = localStorage.getItem("token");
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/wallet/withdrawals", {
+    headers: { "x-auth-token": token }
+  });
+  const data = await res.json();
+  const rows = data.withdrawals.map(w =>
+    `<tr>
+      <td>${w.coin}</td>
+      <td>${w.amount}</td>
+      <td>${w.status}</td>
+      <td>${new Date(w.date).toLocaleString()}</td>
+    </tr>`
+  ).join("");
+  document.querySelector("#withdrawTable tbody").innerHTML = rows;
+}
+
+window.onload = () => {
+  loadWithdrawals();
+};
   </script>
 </body>
 </html>
