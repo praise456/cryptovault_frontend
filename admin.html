@@ -6,13 +6,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     :root {
-      --primary: #2d89ef;
-      --primary-dark: #1b5fa7;
-      --bg: #f7f9fc;
-      --text: #333;
-      --border: #ddd;
-      --success: #28a745;
-      --danger: #dc3545;
+      --primary: #00c853; /* bright green */
+      --primary-dark: #009624;
+      --bg: #f4f4f4;
+      --text: #222;
+      --border: #ccc;
+      --black: #000;
       --radius: 6px;
     }
 
@@ -22,22 +21,28 @@
 
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
     }
 
     header {
-      background-color: var(--primary);
-      color: white;
+      background-color: var(--black);
+      color: var(--primary);
       padding: 16px;
       text-align: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     header h2 {
       margin: 0;
       font-size: 1.8rem;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 1rem;
+      color: #bbb;
     }
 
     main {
@@ -48,22 +53,26 @@
 
     h3 {
       margin-top: 0;
-      color: var(--primary-dark);
+      color: var(--black);
+      border-left: 4px solid var(--primary);
+      padding-left: 8px;
     }
 
     button {
       background-color: var(--primary);
       border: none;
-      color: white;
+      color: var(--black);
+      font-weight: bold;
       padding: 8px 14px;
       border-radius: var(--radius);
       cursor: pointer;
       font-size: 0.9rem;
-      transition: background-color 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     button:hover {
       background-color: var(--primary-dark);
+      color: white;
     }
 
     button:disabled {
@@ -78,7 +87,7 @@
       background: white;
       border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     th, td {
@@ -88,12 +97,13 @@
     }
 
     th {
-      background-color: #eef3fa;
+      background-color: var(--black);
+      color: var(--primary);
       font-weight: 600;
     }
 
     tr:hover td {
-      background-color: #f1f7ff;
+      background-color: #e8f5e9;
     }
 
     input[type="number"] {
@@ -110,20 +120,22 @@
     }
 
     .status-btn {
-      background-color: var(--success);
+      background-color: var(--primary);
       margin-left: 6px;
     }
 
     .status-btn:hover {
-      background-color: #1e7e34;
+      background-color: var(--primary-dark);
+      color: white;
     }
 
     .danger {
-      background-color: var(--danger);
+      background-color: red;
+      color: white;
     }
 
     .danger:hover {
-      background-color: #a71d2a;
+      background-color: darkred;
     }
 
     @media (max-width: 768px) {
@@ -139,7 +151,7 @@
         margin-bottom: 10px;
         background: white;
         border-radius: var(--radius);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       }
 
       td {
@@ -157,7 +169,7 @@
         display: block;
         color: var(--primary-dark);
       }
-    }
+    
   </style>
 </head>
 <body>
