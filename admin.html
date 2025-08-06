@@ -192,6 +192,13 @@
       </thead>
       <tbody></tbody>
     </table>
+    <h3>Pending Withdrawals</h3>
+<button onclick="loadWithdrawals()">Load Withdrawals</button>
+<table border="1" id="adminWithdrawTable">
+  <thead><tr><th>User</th><th>Coin</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody></tbody>
+</table>
+
   </main>
 
   <script>
@@ -329,6 +336,46 @@
     window.addEventListener('load', () => {
       if (localStorage.getItem('token')) fetchUsers();
     });
+
+    async function loadWithdrawals() {
+  const token = localStorage.getItem("token");
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals", {
+    headers: { "x-auth-token": token }
+  });
+  const data = await res.json();
+  let rows = "";
+  data.users.forEach(user => {
+    (user.withdrawals || []).forEach((w, idx) => {
+      rows += `
+        <tr>
+          <td>${user.email}</td>
+          <td>${w.coin}</td>
+          <td>${w.amount}</td>
+          <td>${w.status}</td>
+          <td>
+            ${w.status === 'pending' ? `
+              <button onclick="updateWithdrawal('${user._id}', ${idx}, 'approved')">Approve</button>
+              <button onclick="updateWithdrawal('${user._id}', ${idx}, 'rejected')">Reject</button>
+            ` : ''}
+          </td>
+        </tr>
+      `;
+    });
+  });
+  document.querySelector("#adminWithdrawTable tbody").innerHTML = rows;
+}
+
+async function updateWithdrawal(userId, index, status) {
+  const token = localStorage.getItem("token");
+  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals/update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-auth-token": token },
+    body: JSON.stringify({ userId, index, status })
+  });
+  const data = await res.json();
+  alert(data.msg);
+  loadWithdrawals();
+}
   </script>
 </body>
 </html>
