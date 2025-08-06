@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setLoading(submitBtn, true);
       try {
-        const res = await fetchWithTimeout(`${API_BASE}/api/register`, {
+        const res = await fetch(`${API_BASE}/api/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
