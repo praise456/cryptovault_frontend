@@ -1,143 +1,302 @@
 const API_BASE = "https://crypto-backend-t3bz.onrender.com";
 
+/* ---------- Helpers ---------- */
+function showMsg(id, text, isError = true) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? "red" : "green";
+}
+
+function setLoading(button, loading = true, text = "Please wait...") {
+  if (!button) return;
+  if (loading) {
+    button.dataset.origText = button.dataset.origText || button.textContent;
+    button.disabled = true;
+    button.textContent = text;
+  } else {
+    button.disabled = false;
+    button.textContent = button.dataset.origText || button.textContent;
+  }
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return { ok: res.ok, msg: res.statusText || "Unexpected server response" };
+  }
+}
+
+/**
+ * Robust fetchWithTimeout
+ * - returns the fetch Response when successful
+ * - throws an Error with .type one of: 'timeout' | 'network' | 'http'
+ * - on 'http' errors attaches .status and .responseText
+ */
+async function fetchWithTimeout(url, options = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const { signal } = controller;
+  const fetchOptions = { ...options, signal };
+
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const res = await fetch(url, fetchOptions);
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      let bodyText = null;
+      try { bodyText = await res.text(); } catch (_) {}
+      const err = new Error(`HTTP error: ${res.status}`);
+      err.type = 'http';
+      err.status = res.status;
+      err.responseText = bodyText;
+      throw err;
+    }
+
+    return res;
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      const e = new Error('Request timeout');
+      e.type = 'timeout';
+      throw e;
+    }
+    const e = new Error(err.message || 'Network or CORS error');
+    e.type = 'network';
+    throw e;
+  }
+}
+
+/* ---------- DOM ready ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
   const investmentForm = document.getElementById("investmentForm");
 
+  // ---------- LOGIN ----------
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      showMsg("loginMsg", "");
+      const email = (document.getElementById("email")?.value || "").trim();
+      const password = (document.getElementById("password")?.value || "").trim();
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
 
+      if (!email || !password) return showMsg("loginMsg", "Email and password are required.");
+      if (!isValidEmail(email)) return showMsg("loginMsg", "Please enter a valid email.");
+      if (password.length < 6) return showMsg("loginMsg", "Password must be at least 6 characters.");
+
+      setLoading(submitBtn, true);
       try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          window.location.href = "dashboard.html";
-        } else {
-          document.getElementById("loginMsg").textContent = data.msg || "Login failed";
-        }
+        }, 15000);
+        // log for debugging
+        console.log('Login status:', res.status);
+        const data = await safeJson(res);
+        console.log('Login body:', data);
+
+        // successful if no http error thrown
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+        showMsg("loginMsg", "Login successful. Redirecting...", false);
+        setTimeout(() => (window.location.href = "dashboard.html"), 700);
       } catch (err) {
-        document.getElementById("loginMsg").textContent = "Server error";
+        console.error("Login error:", err);
+        if (err.type === 'timeout') showMsg("loginMsg", "Request timed out. Try again.");
+        else if (err.type === 'network') showMsg("loginMsg", "Network or CORS error. Check console.");
+        else if (err.type === 'http') {
+          // try to parse server error message
+          let bodyMsg = 'Login failed';
+          try {
+            const parsed = JSON.parse(err.responseText || '{}');
+            if (parsed.msg) bodyMsg = parsed.msg;
+            else if (Array.isArray(parsed.errors)) bodyMsg = parsed.errors.join('; ');
+          } catch (_) {}
+          showMsg("loginMsg", `${bodyMsg} (${err.status})`);
+        } else showMsg("loginMsg", "Server error");
+      } finally {
+        setLoading(submitBtn, false);
       }
     });
   }
 
+  // ---------- REGISTER ----------
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("regEmail").value;
-      const password = document.getElementById("regPassword").value;
+      showMsg("registerMsg", "");
+      const email = (document.getElementById("regEmail")?.value || "").trim();
+      const password = (document.getElementById("regPassword")?.value || "").trim();
+      const submitBtn = registerForm.querySelector('button[type="submit"]');
 
+      if (!email || !password) return showMsg("registerMsg", "Email and password are required.");
+      if (!isValidEmail(email)) return showMsg("registerMsg", "Please enter a valid email.");
+      if (password.length < 6) return showMsg("registerMsg", "Password must be at least 6 characters.");
+
+      setLoading(submitBtn, true);
       try {
-        const res = await fetch(`${API_BASE}/api/auth/register`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          window.location.href = "dashboard.html";
-        } else {
-          document.getElementById("registerMsg").textContent = data.msg || "Registration failed";
-        }
+        }, 20000); // give register more time
+        console.log('Register status:', res.status);
+        const data = await safeJson(res);
+        console.log('Register body:', data);
+
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+        showMsg("registerMsg", "Registration successful. Redirecting...", false);
+        setTimeout(() => (window.location.href = "dashboard.html"), 700);
       } catch (err) {
-        document.getElementById("registerMsg").textContent = "Server error";
+        console.error("Register error:", err);
+        if (err.type === 'timeout') showMsg("registerMsg", "Request timed out. Try again.");
+        else if (err.type === 'network') showMsg("registerMsg", "Network or CORS error. Check console.");
+        else if (err.type === 'http') {
+          let bodyMsg = 'Registration failed';
+          try {
+            const parsed = JSON.parse(err.responseText || '{}');
+            if (parsed.msg) bodyMsg = parsed.msg;
+            else if (Array.isArray(parsed.errors)) bodyMsg = parsed.errors.join('; ');
+          } catch (_) {}
+          showMsg("registerMsg", `${bodyMsg} (${err.status})`);
+        } else showMsg("registerMsg", "Server error");
+      } finally {
+        setLoading(submitBtn, false);
       }
     });
   }
 
+  // ---------- DASHBOARD & INVEST ----------
   if (window.location.pathname.includes("dashboard.html")) {
     const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "login.html";
-    } else {
-      fetch(`${API_BASE}/api/user`, {
-        headers: {
-          "x-auth-token": token,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.email) {
-            document.getElementById("balance").textContent = `$${data.balance.toFixed(2)}`;
-            const list = document.getElementById("investmentList");
-            list.innerHTML = "";
-            data.investments.forEach(inv => {
-              const li = document.createElement("li");
-              li.textContent = `${inv.plan}: $${inv.amount} ➜ ROI: $${inv.roi}`;
-              list.appendChild(li);
-            });
-          } else {
-            window.location.href = "login.html";
-          }
-        })
-        .catch(() => {
-          window.location.href = "login.html";
-        });
+    if (!token) return (window.location.href = "login.html");
 
-      // Handle investment form submission
-      if (investmentForm) {
-        investmentForm.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const plan = document.getElementById("plan").value;
-          const amount = parseFloat(document.getElementById("amount").value);
-          const msg = document.getElementById("investMsg");
+    (async () => {
+      try {
+        // NOTE: backend expects GET /user (not /api/user) per server code
+        const res = await fetchWithTimeout(`${API_BASE}/user`, {
+          headers: { "x-auth-token": token },
+        }, 15000);
+        console.log('User fetch status:', res.status);
+        const data = await safeJson(res);
+        console.log('User fetch body:', data);
 
-          try {
-            const res = await fetch(`${API_BASE}/api/user/invest`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-auth-token": token,
-              },
-              body: JSON.stringify({ plan, amount }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-              msg.style.color = "lightgreen";
-              msg.textContent = "Investment successful!";
-              setTimeout(() => window.location.reload(), 1000);
-            } else {
-              msg.style.color = "red";
-              msg.textContent = data.msg || "Error occurred";
-            }
-          } catch (err) {
-            msg.textContent = "Server error";
-          }
-        });
+        if (!data || !data.email) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          return (window.location.href = "login.html");
+        }
+
+        const balanceEl = document.getElementById("balance");
+        if (balanceEl && typeof data.balance === "number") {
+          balanceEl.textContent = `$${data.balance.toFixed(2)}`;
+        }
+        const list = document.getElementById("investmentList");
+        if (list && Array.isArray(data.investments)) {
+          list.innerHTML = "";
+          data.investments.forEach(inv => {
+            const li = document.createElement("li");
+            const plan = inv.plan || "Unknown plan";
+            const amount = typeof inv.amount === "number" ? inv.amount : inv.amount || "N/A";
+            const roi = typeof inv.roi === "number" ? inv.roi : inv.roi || "N/A";
+            li.textContent = `${plan}: $${amount} ➜ ROI: $${roi}`;
+            list.appendChild(li);
+          });
+        }
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
       }
+    })();
+
+    if (investmentForm) {
+      investmentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const plan = (document.getElementById("plan")?.value || "").trim();
+        const amountVal = document.getElementById("amount")?.value;
+        const amount = parseFloat(amountVal);
+        if (!plan) return showMsg("investMsg", "Please select an investment plan.");
+        if (!amountVal || Number.isNaN(amount) || amount <= 0) return showMsg("investMsg", "Enter a valid amount.");
+
+        const submitBtn = investmentForm.querySelector('button[type="submit"]');
+        setLoading(submitBtn, true);
+        try {
+          // NOTE: backend expects POST /user/invest (not /api/user/invest)
+          const res = await fetchWithTimeout(`${API_BASE}/user/invest`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-auth-token": token,
+            },
+            body: JSON.stringify({ plan, amount }),
+          }, 20000);
+          console.log('Invest status:', res.status);
+          const data = await safeJson(res);
+          console.log('Invest body:', data);
+
+          showMsg("investMsg", "Investment successful!", false);
+          setTimeout(() => window.location.reload(), 1000);
+        } catch (err) {
+          console.error("Investment error:", err);
+          if (err.type === 'timeout') showMsg("investMsg", "Request timed out. Try again.");
+          else if (err.type === 'network') showMsg("investMsg", "Network or CORS error. Check console.");
+          else if (err.type === 'http') {
+            let bodyMsg = 'Error occurred';
+            try {
+              const parsed = JSON.parse(err.responseText || '{}');
+              bodyMsg = parsed.msg || (Array.isArray(parsed.errors) ? parsed.errors.join('; ') : bodyMsg);
+            } catch (_) {}
+            showMsg("investMsg", `${bodyMsg} (${err.status})`);
+          } else showMsg("investMsg", "Server error");
+        } finally {
+          setLoading(submitBtn, false);
+        }
+      });
     }
   }
+
+  // Wallet connect button bind (if present)
+  const connectBtn = document.getElementById("connectWalletBtn");
+  if (connectBtn) connectBtn.addEventListener("click", connectWallet);
 });
 
+/* ---------- Logout ---------- */
 function logout() {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
   window.location.href = "login.html";
 }
 
-// Connect to MetaMask
+/* ---------- MetaMask wallet ---------- */
 async function connectWallet() {
-  if (typeof window.ethereum !== 'undefined') {
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const wallet = accounts[0];
-      document.getElementById('walletAddress').textContent = wallet;
-    } catch (err) {
-      alert("Wallet connection failed");
+  if (typeof window.ethereum === "undefined") {
+    alert("MetaMask not detected. Please install MetaMask.");
+    return;
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const wallet = accounts && accounts[0];
+    if (wallet) {
+      const el = document.getElementById("walletAddress");
+      if (el) el.textContent = wallet;
+    } else {
+      alert("No wallet account returned.");
     }
-  } else {
-    alert("MetaMask not detected. Please install the MetaMask extension.");
+  } catch (err) {
+    console.error("Wallet connect failed:", err);
+    alert("Wallet connection failed.");
   }
 }
+
