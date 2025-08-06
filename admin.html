@@ -195,187 +195,141 @@
   </main>
 
   <script>
-   
+    const API_BASE = 'https://crypto-backend-t3bz.onrender.com';
 
-  // ---------- Config ----------
-  const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // no trailing slash
+    function joinUrl(base, path) {
+      return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+    }
 
-  function joinUrl(base, path) {
-    return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
-  }
+    function authHeaders(token) {
+      return { 'Content-Type': 'application/json', 'x-auth-token': token };
+    }
 
-  function authHeaders(token) {
-    return { 'Content-Type': 'application/json', 'x-auth-token': token };
-  }
-
-  // ---------- Helpers ----------
-  function el(html) {
-    const template = document.createElement('template');
-    template.innerHTML = html.trim();
-    return template.content.firstChild;
-  }
-
-  function showAlert(msg) {
-    // simple alert for now — replace with nicer UI as needed
-    alert(msg);
-  }
-
-  // ---------- Fetch wrapper (shows helpful error) ----------
-  async function fetchJson(url, options = {}) {
-    try {
-      const res = await fetch(url, options);
-      const text = await res.text();
-      let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { msg: text }; }
-      if (!res.ok) {
-        const msg = data.msg || data.error || `Request failed (${res.status})`;
-        const err = new Error(msg);
-        err.status = res.status;
-        err.body = data;
+    async function fetchJson(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { msg: text }; }
+        if (!res.ok) {
+          const msg = data.msg || data.error || `Request failed (${res.status})`;
+          const err = new Error(msg);
+          err.status = res.status;
+          err.body = data;
+          throw err;
+        }
+        return data;
+      } catch (err) {
+        console.error('fetchJson error:', err);
         throw err;
       }
-      return data;
-    } catch (err) {
-      console.error('fetchJson error:', err);
-      throw err;
     }
-  }
 
-  // ---------- Render users ----------
-  async function fetchUsers() {
-    const token = localStorage.getItem('token');
-    if (!token) return showAlert('No auth token found. Please login.');
+    async function fetchUsers() {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('No auth token found. Please login.');
 
-    const url = joinUrl(API_BASE, '/api/admin/users');
-    try {
-      const data = await fetchJson(url, { headers: authHeaders(token) });
-      renderUserTable(data.users || []);
-    } catch (err) {
-      showAlert(err.message || 'Failed to load users');
-    }
-  }
-
-  function renderUserTable(users) {
-    const tbody = document.querySelector('#userTable tbody');
-    tbody.innerHTML = ''; // clear
-
-    users.forEach((u, userIndex) => {
-      const tr = document.createElement('tr');
-
-      // Email
-      const tdEmail = document.createElement('td');
-      tdEmail.textContent = u.email || '(no email)';
-      tr.appendChild(tdEmail);
-
-      // Balance
-      const tdBal = document.createElement('td');
-      tdBal.textContent = `$${(u.balance || 0).toFixed ? u.balance.toFixed(2) : (u.balance || 0)}`;
-      tr.appendChild(tdBal);
-
-      // Investments column
-      const tdInv = document.createElement('td');
-      tdInv.className = 'small';
-      if (Array.isArray(u.investments) && u.investments.length) {
-        u.investments.forEach((inv, invIndex) => {
-          const div = document.createElement('div');
-          div.innerHTML = `
-            <strong>[${invIndex}] ${inv.plan || '—'}</strong>
-            — $${inv.amount || 0} @ ${inv.rate || 0}% — ${inv.status || 'n/a'}
-            <button data-action="complete" data-user="${u._id}" data-index="${invIndex}">Complete</button>
-          `;
-          tdInv.appendChild(div);
-        });
-      } else {
-        tdInv.textContent = 'No investments';
+      const url = joinUrl(API_BASE, '/api/admin/users');
+      try {
+        const data = await fetchJson(url, { headers: authHeaders(token) });
+        renderUserTable(data.users || []);
+      } catch (err) {
+        alert(err.message || 'Failed to load users');
       }
-      tr.appendChild(tdInv);
+    }
 
-      // Actions: credit input + button
-      const tdAct = document.createElement('td');
-      tdAct.innerHTML = `
-        <input type="number" step="0.01" min="0" placeholder="Amount" data-amt-for="${u._id}" />
-        <button data-action="credit" data-user="${u._id}">Credit</button>
-      `;
-      tr.appendChild(tdAct);
+    function renderUserTable(users) {
+      const tbody = document.querySelector('#userTable tbody');
+      tbody.innerHTML = '';
+      users.forEach((u) => {
+        const tr = document.createElement('tr');
 
-      tbody.appendChild(tr);
+        tr.innerHTML = `
+          <td data-label="Email">${u.email || '(no email)'}</td>
+          <td data-label="Balance">$${(u.balance || 0).toFixed ? u.balance.toFixed(2) : (u.balance || 0)}</td>
+          <td data-label="Investments" class="small">
+            ${Array.isArray(u.investments) && u.investments.length
+              ? u.investments.map((inv, i) => `
+                  <div>
+                    <strong>[${i}] ${inv.plan || '—'}</strong>
+                    — $${inv.amount || 0} @ ${inv.rate || 0}% — ${inv.status || 'n/a'}
+                    <button class="status-btn" data-action="complete" data-user="${u._id}" data-index="${i}">Complete</button>
+                  </div>
+                `).join('')
+              : 'No investments'}
+          </td>
+          <td data-label="Actions">
+            <input type="number" step="0.01" min="0" placeholder="Amount" data-amt-for="${u._id}" />
+            <button data-action="credit" data-user="${u._id}">Credit</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelector('#userTable tbody').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+
+      const action = btn.getAttribute('data-action');
+      const userId = btn.getAttribute('data-user');
+
+      if (action === 'credit') {
+        const input = document.querySelector(`input[data-amt-for="${userId}"]`);
+        const amount = parseFloat(input.value);
+        if (isNaN(amount) || amount <= 0) return alert('Enter a valid amount to credit');
+        await creditUser(userId, amount);
+      } else if (action === 'complete') {
+        const invIndex = parseInt(btn.getAttribute('data-index'), 10);
+        if (Number.isNaN(invIndex)) return alert('Bad investment index');
+        await updateStatus(userId, invIndex, 'completed');
+      }
     });
-  }
 
-  // ---------- Event delegation for actions ----------
-  document.querySelector('#userTable tbody').addEventListener('click', async (e) => {
-    const btn = e.target.closest('button[data-action]');
-    if (!btn) return;
+    async function creditUser(userId, amount) {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Not authenticated');
 
-    const action = btn.getAttribute('data-action');
-    const userId = btn.getAttribute('data-user');
-
-    if (action === 'credit') {
-      // find the input near the button
-      const input = btn.parentElement.querySelector(`input[data-amt-for="${userId}"]`);
-      const val = input && input.value;
-      const amount = parseFloat(val);
-      if (isNaN(amount) || amount <= 0) {
-        return showAlert('Enter a valid amount to credit');
+      const url = joinUrl(API_BASE, '/api/admin/credit');
+      try {
+        const body = { userId, amount };
+        const data = await fetchJson(url, {
+          method: 'POST',
+          headers: authHeaders(token),
+          body: JSON.stringify(body),
+        });
+        alert(data.msg || 'Credited successfully');
+        fetchUsers();
+      } catch (err) {
+        alert(err.message || 'Credit failed');
       }
-      await creditUser(userId, amount);
-    } else if (action === 'complete') {
-      const invIndex = parseInt(btn.getAttribute('data-index'), 10);
-      if (Number.isNaN(invIndex)) return showAlert('Bad investment index');
-      await updateStatus(userId, invIndex, 'completed');
     }
-  });
 
-  // ---------- Admin actions ----------
-  async function creditUser(userId, amount) {
-    const token = localStorage.getItem('token');
-    if (!token) return showAlert('Not authenticated');
+    async function updateStatus(userId, investIndex, newStatus) {
+      const token = localStorage.getItem('token');
+      if (!token) return alert('Not authenticated');
 
-    const url = joinUrl(API_BASE, '/api/admin/credit');
-    try {
-      const body = { userId, amount };
-      const data = await fetchJson(url, {
-        method: 'POST',
-        headers: authHeaders(token),
-        body: JSON.stringify(body),
-      });
-      showAlert(data.msg || 'Credited successfully');
-      fetchUsers();
-    } catch (err) {
-      showAlert(err.message || 'Credit failed');
+      const url = joinUrl(API_BASE, '/api/admin/status');
+      try {
+        const body = { userId, investIndex, newStatus };
+        const data = await fetchJson(url, {
+          method: 'POST',
+          headers: authHeaders(token),
+          body: JSON.stringify(body),
+        });
+        alert(data.msg || 'Status updated');
+        fetchUsers();
+      } catch (err) {
+        alert(err.message || 'Status update failed');
+      }
     }
-  }
 
-  async function updateStatus(userId, investIndex, newStatus) {
-    const token = localStorage.getItem('token');
-    if (!token) return showAlert('Not authenticated');
+    document.getElementById('loadUsersBtn').addEventListener('click', fetchUsers);
 
-    const url = joinUrl(API_BASE, '/api/admin/status');
-    try {
-      const body = { userId, investIndex, newStatus };
-      const data = await fetchJson(url, {
-        method: 'POST',
-        headers: authHeaders(token),
-        body: JSON.stringify(body),
-      });
-      showAlert(data.msg || 'Status updated');
-      fetchUsers();
-    } catch (err) {
-      showAlert(err.message || 'Status update failed');
-    }
-  }
-
-  // ---------- Bind load button ----------
-  document.getElementById('loadUsersBtn').addEventListener('click', fetchUsers);
-
-  // Optional: auto-load on page open if token present
-  window.addEventListener('load', () => {
-    if (localStorage.getItem('token')) {
-      fetchUsers();
-    }
-  });
-
-  
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('token')) fetchUsers();
+    });
   </script>
 </body>
 </html>
+
