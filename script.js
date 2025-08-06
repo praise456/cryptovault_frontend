@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://crypto-backend-t3bz.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("password").value;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("regPassword").value;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
+        const res = await fetch(`${API_BASE}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!token) {
       window.location.href = "login.html";
     } else {
-      fetch(`${API_BASE}/user`, {
+      fetch(`${API_BASE}/api/user`, {
         headers: {
           "x-auth-token": token,
         },
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const msg = document.getElementById("investMsg");
 
           try {
-            const res = await fetch(`${API_BASE}/user/invest`, {
+            const res = await fetch(`${API_BASE}/api/user/invest`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
