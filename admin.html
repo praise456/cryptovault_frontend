@@ -337,44 +337,47 @@
       if (localStorage.getItem('token')) fetchUsers();
     });
 
-    async function loadWithdrawals() {
-  const token = localStorage.getItem("token");
-  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals", {
-    headers: { "x-auth-token": token }
-  });
-  const data = await res.json();
-  let rows = "";
-  data.users.forEach(user => {
-    (user.withdrawals || []).forEach((w, idx) => {
-      rows += `
-        <tr>
-          <td>${user.email}</td>
-          <td>${w.coin}</td>
-          <td>${w.amount}</td>
-          <td>${w.status}</td>
-          <td>
-            ${w.status === 'pending' ? `
-              <button onclick="updateWithdrawal('${user._id}', ${idx}, 'approved')">Approve</button>
-              <button onclick="updateWithdrawal('${user._id}', ${idx}, 'rejected')">Reject</button>
-            ` : ''}
-          </td>
-        </tr>
-      `;
-    });
-  });
-  document.querySelector("#adminWithdrawTable tbody").innerHTML = rows;
-}
+   async function loadWithdrawals() {
+  const token = localStorage.getItem('token');
+  if (!token) { alert('No admin token'); return; }
 
-async function updateWithdrawal(userId, index, status) {
-  const token = localStorage.getItem("token");
-  const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals/update", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-auth-token": token },
-    body: JSON.stringify({ userId, index, status })
-  });
-  const data = await res.json();
-  alert(data.msg);
-  loadWithdrawals();
+  try {
+    const res = await fetch('https://crypto-backend-t3bz.onrender.com/api/admin/withdrawals', {
+      headers: { 'x-auth-token': token }
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.error('Admin withdrawals fetch failed', res.status, txt);
+      alert('Failed to load withdrawals: ' + (res.status === 403 ? 'Not an admin' : res.status));
+      return;
+    }
+
+    const data = await res.json();
+    const tbody = document.querySelector('#adminWithdrawTable tbody');
+    let rows = '';
+    (data.users || []).forEach(user => {
+      (user.withdrawals || []).forEach((w, idx) => {
+        rows += `
+          <tr>
+            <td>${user.email}</td>
+            <td>${w.coin}</td>
+            <td>${w.amount}</td>
+            <td>${w.status}</td>
+            <td>
+              ${w.status === 'pending' ? `
+                <button onclick="updateWithdrawal('${user._id}', ${idx}, 'approved')">Approve</button>
+                <button onclick="updateWithdrawal('${user._id}', ${idx}, 'rejected')">Reject</button>
+              ` : ''}
+            </td>
+          </tr>`;
+      });
+    });
+    tbody.innerHTML = rows || '<tr><td colspan="5">No withdrawals</td></tr>';
+  } catch (err) {
+    console.error('loadWithdrawals error', err);
+    alert('Network error loading withdrawals');
+  }
 }
   </script>
 </body>
