@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setLoading(submitBtn, true);
         try {
-          const res = await fetchWithTimeout(`${API_BASE}/user/invest`, {
+          const res = await fetchWithTimeout(`${API_BASE}/api/user/invest`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
