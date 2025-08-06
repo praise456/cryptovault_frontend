@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <meta charset="UTF-8" />
+</head>
+<body>
+  <h2>Admin Dashboard</h2>
+  <p>Welcome, Admin</p>
+
+  <h3>All Users</h3>
+  <button onclick="fetchUsers()">Load Users</button>
+  <table border="1" id="userTable">
+    <thead><tr><th>Email</th><th>Balance</th><th>Investments</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function fetchUsers() {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/users", {
+        headers: { Authorization: token }
+      });
+      const data = await res.json();
+
+      const rows = data.users.map((u, index) => {
+        const invests = (u.investments || []).map((inv, i) =>
+          \`<div>
+            [\${i}] \${inv.plan} - \$\${inv.amount} @ \${inv.rate}% - \${inv.status}
+            <button onclick="updateStatus('\${u._id}', \${i}, 'completed')">Complete</button>
+          </div>\`).join("");
+
+        return \`
+          <tr>
+            <td>\${u.email}</td>
+            <td>\$ \${u.balance || 0}</td>
+            <td>\${invests}</td>
+            <td>
+              <input type="number" id="amt\${index}" placeholder="Amount" />
+              <button onclick="creditUser('\${u._id}', \${index})">Credit</button>
+            </td>
+          </tr>
+        \`;
+      }).join("");
+      document.querySelector("#userTable tbody").innerHTML = rows;
+    }
+
+    async function creditUser(userId, i) {
+      const token = localStorage.getItem("token");
+      const amt = document.getElementById("amt" + i).value;
+      const res = await fetch("http://localhost:5000/api/admin/credit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: token },
+        body: JSON.stringify({ userId, amount: amt })
+      });
+      const data = await res.json();
+      alert(data.msg);
+      fetchUsers();
+    }
+
+    async function updateStatus(userId, index, newStatus) {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: token },
+        body: JSON.stringify({ userId, investIndex: index, newStatus })
+      });
+      const data = await res.json();
+      alert(data.msg);
+      fetchUsers();
+    }
+  </script>
+</body>
+</html>

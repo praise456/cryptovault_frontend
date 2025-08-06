@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | CryptoVault</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="hero">
+    <h1>Welcome to Your Dashboard</h1>
+    <button onclick="logout()" class="btn">Logout</button>
+  </header>
+
+  
+    <section class="wallet">
+      <h3>🔗 Wallet</h3>
+      <button onclick="connectWallet()">Connect MetaMask</button>
+      <p><strong>Wallet Address:</strong> <span id="walletAddress">Not connected</span></p>
+    </section>
+    <section class="dashboard">
+    
+    <h2>Account Overview</h2>
+    <p><strong>Balance:</strong> <span id="balance">$0.00</span></p>
+
+    <h3>Make a New Investment</h3>
+    <form id="investmentForm">
+      <select id="plan" required>
+        <option value="">Select Plan</option>
+        <option value="Starter">Starter (5% ROI)</option>
+        <option value="Pro">Pro (7% ROI)</option>
+        <option value="Elite">Elite (10% ROI)</option>
+      </select>
+      <input type="number" id="amount" placeholder="Amount" required min="1"/>
+      <button type="submit">Invest</button>
+      <p id="investMsg"></p>
+    </form>
+
+    <h3>Your Investments</h3>
+    <ul id="investmentList"></ul>
+  </section>
+
+  <footer>
+    <p>© 2025 CryptoVault. All rights reserved.</p>
+  </footer>
+  <script src="script.js"></script>
+
+<!-- Deposit Modal -->
+<div id="depositModal" style="display:none;">
+  <h3>Deposit Crypto</h3>
+  <select id="coin">
+    <option value="BTC">BTC</option>
+    <option value="ETH">ETH</option>
+    <option value="USDT">USDT</option>
+  </select>
+  <input type="number" id="amount" placeholder="Amount" />
+  <button onclick="deposit()">Submit</button>
+  <button onclick="closeModal()">Close</button>
+  <p id="depositMsg"></p>
+</div>
+
+<!-- Wallet History -->
+<h3>Transaction History</h3>
+<table border="1" id="walletTable">
+  <thead><tr><th>Coin</th><th>Amount</th><th>Date</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<button onclick="openModal()">Deposit</button>
+
+<script>
+function openModal() {
+  document.getElementById("depositModal").style.display = "block";
+}
+function closeModal() {
+  document.getElementById("depositModal").style.display = "none";
+}
+
+async function deposit() {
+  const coin = document.getElementById("coin").value;
+  const amount = document.getElementById("amount").value;
+  const token = localStorage.getItem("token");
+  const res = await fetch("http://localhost:5000/api/wallet/deposit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: token },
+    body: JSON.stringify({ coin, amount })
+  });
+  const data = await res.json();
+  document.getElementById("depositMsg").innerText = data.msg || data.error;
+  if (data.balance !== undefined) {
+    document.getElementById("balance").innerText = "Balance: $" + data.balance.toFixed(2);
+    loadWallet();
+  }
+}
+
+async function loadWallet() {
+  const token = localStorage.getItem("token");
+  const res = await fetch("http://localhost:5000/api/wallet/history", {
+    headers: { Authorization: token }
+  });
+  const data = await res.json();
+  const rows = data.wallet.map(tx => 
+    `<tr><td>${tx.coin}</td><td>${tx.amount}</td><td>${new Date(tx.date).toLocaleString()}</td></tr>`
+  ).join("");
+  document.querySelector("#walletTable tbody").innerHTML = rows;
+}
+
+window.onload = () => {
+  loadWallet();
+};
+</script>
+
+<!-- Investment Section -->
+<h3>Investment Plans</h3>
+<button onclick="openInvestModal()">New Investment</button>
+
+<!-- Investment Modal -->
+<div id="investModal" style="display:none;">
+  <h4>Start Investment</h4>
+  <input type="text" id="plan" placeholder="Plan Name" />
+  <input type="number" id="amountInvest" placeholder="Amount" />
+  <input type="number" id="duration" placeholder="Duration (days)" />
+  <input type="number" id="rate" placeholder="ROI (%)" />
+  <button onclick="createInvestment()">Invest</button>
+  <button onclick="closeInvestModal()">Close</button>
+  <p id="investMsg"></p>
+</div>
+
+<!-- Investment Table -->
+<table border="1" id="investTable">
+  <thead>
+    <tr><th>Plan</th><th>Amount</th><th>Rate</th><th>Profit</th><th>Start</th><th>End</th><th>Status</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+function openInvestModal() {
+  document.getElementById("investModal").style.display = "block";
+}
+function closeInvestModal() {
+  document.getElementById("investModal").style.display = "none";
+}
+
+async function createInvestment() {
+  const token = localStorage.getItem("token");
+  const plan = document.getElementById("plan").value;
+  const amount = document.getElementById("amountInvest").value;
+  const duration = document.getElementById("duration").value;
+  const rate = document.getElementById("rate").value;
+
+  const res = await fetch("http://localhost:5000/api/investments/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: token },
+    body: JSON.stringify({ plan, amount, duration, rate })
+  });
+  const data = await res.json();
+  document.getElementById("investMsg").innerText = data.msg || data.error;
+  if (data.investments) loadInvestments();
+}
+
+async function loadInvestments() {
+  const token = localStorage.getItem("token");
+  const res = await fetch("http://localhost:5000/api/investments", {
+    headers: { Authorization: token }
+  });
+  const data = await res.json();
+  const rows = data.investments.map(inv => 
+    `<tr><td>${inv.plan}</td><td>${inv.amount}</td><td>${inv.rate}%</td><td>${inv.profit}</td><td>${new Date(inv.start).toLocaleDateString()}</td><td>${new Date(inv.end).toLocaleDateString()}</td><td>${inv.status}</td></tr>`
+  ).join("");
+  document.querySelector("#investTable tbody").innerHTML = rows;
+}
+
+window.onload = () => {
+  loadWallet();
+  loadInvestments();
+};
+</script>
+</body>
+</html>
