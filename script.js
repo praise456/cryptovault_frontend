@@ -1,4 +1,4 @@
-const API_BASE = "https://crypto-backend-t3bz.onrender.com//api";
+const API_BASE = "https://crypto-backend-t3bz.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("password").value;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        const res = await fetch(`${API_BASE}/api/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("regPassword").value;
 
       try {
-        const res = await fetch(`${API_BASE}/auth/register`, {
+        const res = await fetch(`${API_BASE}/api/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
