@@ -1,145 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Login</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      background: linear-gradient(135deg, #0d0d0d, #1b5e20);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .login-box {
-      background: #111;
-      padding: 30px;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #00c853;
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background: #222;
-      color: white;
-      font-size: 1rem;
-    }
-    input:focus {
-      outline: 2px solid #00c853;
-    }
-    button {
-      background: #00c853;
-      border: none;
-      color: black;
-      font-weight: bold;
-      width: 100%;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s ease-in-out;
-    }
-    button:hover {
-      background: #00e676;
-    }
-    .message {
-      text-align: center;
-      font-size: 0.9rem;
-      margin-top: 10px;
-    }
-    .error { color: #ff5252; }
-    .success { color: #00e676; }
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: #aaa;
-    }
-    .footer a {
-      color: #00c853;
-      text-decoration: none;
-    }
-  </style>
+  <title>Login | CryptoVault</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="login-box">
-    <h2>Crypto Login</h2>
+  <section class="login-container">
+    <h2>Login to CryptoVault</h2>
     <form id="loginForm">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="Enter your email" required>
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter your password" required>
-      </div>
+      <input type="email" id="email" placeholder="Email" required/>
+      <input type="password" id="password" placeholder="Password" required/>
       <button type="submit">Login</button>
-      <div id="loginMsg" class="message"></div>
+      <p id="loginMsg"></p>
     </form>
-    <div class="footer">
-      Don't have an account? <a href="register.html">Register here</a>
-    </div>
-  </div>
-
-  <script>
-    const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // change to your Render backend URL
-
-    function showMsg(id, msg, isError = true) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.className = 'message ' + (isError ? 'error' : 'success');
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      if (!email || !password) {
-        return showMsg('loginMsg', 'Email and password are required.');
-      }
-      try {
-        const res = await fetch(`${API_BASE}/api/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          return showMsg('loginMsg', data.msg || 'Login failed');
-        }
-        // Save token & user info
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        showMsg('loginMsg', 'Login successful! Redirecting...', false);
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1000);
-      } catch (err) {
-        console.error(err);
-        showMsg('loginMsg', 'Network error. Try again later.');
-      }
-    });
-  </script>
+    <h3 style="margin-top:2rem;">New here?</h3>
+    <form id="registerForm">
+      <input type="email" id="regEmail" placeholder="Email" required/>
+      <input type="password" id="regPassword" placeholder="Password" required/>
+      <button type="submit">Register</button>
+      <p id="registerMsg"></p>
+    </form>
+  </section>
+  <script src="script.js"></script>
 </body>
 </html>
