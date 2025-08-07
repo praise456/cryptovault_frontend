@@ -115,19 +115,31 @@
   // --------- Config & helpers ----------
   const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // no trailing slash
 
-    
-const user = JSON.parse(localStorage.getItem("user"));
-if (user?.name) {
-  document.getElementById("dashboardName").textContent = user.name;
-}
-    
-  function joinUrl(base, path) {
-    return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
-  }
+   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  function authHeader(token) {
-    return { 'Content-Type': 'application/json', 'x-auth-token': token };
-  }
+    document.getElementById("userName").textContent = user.name || "User";
+    document.getElementById("userBalance").textContent = user.balance?.toFixed(2) || "0.00";
+
+    async function loadUserDetails() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch("https://crypto-backend-t3bz.onrender.com/user", {
+          headers: {
+            "x-auth-token": token
+          }
+        });
+        const data = await res.json();
+        if (data?.name) document.getElementById("userName").textContent = data.name;
+        if (data?.balance != null) document.getElementById("userBalance").textContent = data.balance.toFixed(2);
+      } catch (e) {
+        console.error("Failed to load user details", e);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadUserDetails);
+    
 
   // simple UI helpers
   function showText(id, text) {
