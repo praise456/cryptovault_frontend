@@ -171,6 +171,7 @@
   <footer>
     &copy; 2025 Crypto Platform. All rights reserved.
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
     const API_BASE = 'https://crypto-backend-t3bz.onrender.com';
@@ -226,20 +227,25 @@
       `).join('');
     }
 
-   document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", async function () {
   const token = localStorage.getItem("token");
   if (!token) return console.warn("No token found");
 
   const ctx = document.getElementById('investmentChart').getContext('2d');
 
   try {
-    const res = await fetch('https://crypto-backend-t3bz.onrender.com'/api/user/investments", {
+    const res = await fetch("https://crypto-backend-t3bz.onrender.com/api/user/investments", {
       headers: {
         "Content-Type": "application/json",
         "x-auth-token": token
       }
     });
     const data = await res.json();
+
+    if (!Array.isArray(data.history) || data.history.length === 0) {
+      console.warn("No investment history to display.");
+      return;
+    }
 
     const labels = data.history.map(h =>
       new Date(h.date).toLocaleDateString()
