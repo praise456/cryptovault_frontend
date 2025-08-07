@@ -128,7 +128,8 @@
   </header>
 
   <div class="container">
-    <h2>Welcome, <span id="userName">User</span></h2>
+    <h3>Welcome, <span id="userName"></span>!</h3>
+
 
     <div class="info-box">
       <strong>Email:</strong>
@@ -155,6 +156,11 @@
       <h3>Active Investments</h3>
       <div id="investments"></div>
     </div>
+    <section style="margin-top: 30px;">
+  <h3>Investment Growth</h3>
+  <canvas id="investmentChart" height="100"></canvas>
+</section>
+
 
     <div class="section">
       <h3>Live Crypto Prices</h3>
@@ -219,6 +225,65 @@
         </div>
       `).join('');
     }
+
+   document.addEventListener("DOMContentLoaded", async function () {
+  const token = localStorage.getItem("token");
+  if (!token) return console.warn("No token found");
+
+  const ctx = document.getElementById('investmentChart').getContext('2d');
+
+  try {
+    const res = await fetch("https://your-backend-url.com/api/user/investments", {
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": token
+      }
+    });
+    const data = await res.json();
+
+    const labels = data.history.map(h =>
+      new Date(h.date).toLocaleDateString()
+    );
+    const values = data.history.map(h => h.amount);
+
+    const config = {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Investment Growth ($)',
+          data: values,
+          fill: false,
+          borderColor: '#00c853',
+          backgroundColor: '#00c853',
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#000' }
+          },
+          x: {
+            ticks: { color: '#000' }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#000' }
+          }
+        }
+      }
+    };
+
+    new Chart(ctx, config);
+
+  } catch (err) {
+    console.error("Failed to load investment history:", err);
+  }
+});
 
     async function fetchCryptoPrices() {
       try {
