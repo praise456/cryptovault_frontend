@@ -130,51 +130,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------- REGISTER ----------
-  if (registerForm) {
-    registerForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      showMsg("registerMsg", "");
-      const email = (document.getElementById("regEmail")?.value || "").trim();
-      const password = (document.getElementById("regPassword")?.value || "").trim();
-      const submitBtn = registerForm.querySelector('button[type="submit"]');
+ if (registerForm) {
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMsg("registerMsg", "");
+    const name = (document.getElementById("regName")?.value || "").trim(); // 👈 name field
+    const email = (document.getElementById("regEmail")?.value || "").trim();
+    const password = (document.getElementById("regPassword")?.value || "").trim();
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
 
-      if (!email || !password) return showMsg("registerMsg", "Email and password are required.");
-      if (!isValidEmail(email)) return showMsg("registerMsg", "Please enter a valid email.");
-      if (password.length < 6) return showMsg("registerMsg", "Password must be at least 6 characters.");
+    if (!name || !email || !password) return showMsg("registerMsg", "All fields are required.");
+    if (!isValidEmail(email)) return showMsg("registerMsg", "Please enter a valid email.");
+    if (password.length < 6) return showMsg("registerMsg", "Password must be at least 6 characters.");
 
-      setLoading(submitBtn, true);
-      try {
-        const res = await fetchWithTimeout(`${API_BASE}/api/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }, 20000); // give register more time
-        console.log('Register status:', res.status);
-        const data = await safeJson(res);
-        console.log('Register body:', data);
+    setLoading(submitBtn, true);
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }), // 👈 include name here
+      }, 20000);
 
-        if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-        showMsg("registerMsg", "Registration successful. Redirecting...", false);
-        setTimeout(() => (window.location.href = "dashboard.html"), 700);
-      } catch (err) {
-        console.error("Register error:", err);
-        if (err.type === 'timeout') showMsg("registerMsg", "Request timed out. Try again.");
-        else if (err.type === 'network') showMsg("registerMsg", "Network or CORS error. Check console.");
-        else if (err.type === 'http') {
-          let bodyMsg = 'Registration failed';
-          try {
-            const parsed = JSON.parse(err.responseText || '{}');
-            if (parsed.msg) bodyMsg = parsed.msg;
-            else if (Array.isArray(parsed.errors)) bodyMsg = parsed.errors.join('; ');
-          } catch (_) {}
-          showMsg("registerMsg", `${bodyMsg} (${err.status})`);
-        } else showMsg("registerMsg", "Server error");
-      } finally {
-        setLoading(submitBtn, false);
-      }
-    });
-  }
+      console.log('Register status:', res.status);
+      const data = await safeJson(res);
+      console.log('Register body:', data);
+
+      if (data.token) localStorage.setItem("token", data.token);
+      if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+      showMsg("registerMsg", "Registration successful. Redirecting...", false);
+      setTimeout(() => (window.location.href = "dashboard.html"), 700);
+    } catch (err) {
+      console.error("Register error:", err);
+      if (err.type === 'timeout') showMsg("registerMsg", "Request timed out. Try again.");
+      else if (err.type === 'network') showMsg("registerMsg", "Network or CORS error. Check console.");
+      else if (err.type === 'http') {
+        let bodyMsg = 'Registration failed';
+        try {
+          const parsed = JSON.parse(err.responseText || '{}');
+          if (parsed.msg) bodyMsg = parsed.msg;
+          else if (Array.isArray(parsed.errors)) bodyMsg = parsed.errors.join('; ');
+        } catch (_) {}
+        showMsg("registerMsg", `${bodyMsg} (${err.status})`);
+      } else showMsg("registerMsg", "Server error");
+    } finally {
+      setLoading(submitBtn, false);
+    }
+  });
+}
 
   // ---------- DASHBOARD & INVEST ----------
   if (window.location.pathname.includes("dashboard.html")) {
