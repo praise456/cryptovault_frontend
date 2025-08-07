@@ -8,7 +8,7 @@
 </head>
 <body>
   <header class="hero">
-    <h1>Welcome to Your Dashboard</h1>
+    <h1>Welcome, <span id="dashboardName">User</span></h1>
     <button onclick="logout()" class="btn">Logout</button>
   </header>
 
@@ -115,6 +115,12 @@
   // --------- Config & helpers ----------
   const API_BASE = 'https://crypto-backend-t3bz.onrender.com'; // no trailing slash
 
+    
+const user = JSON.parse(localStorage.getItem("user"));
+if (user?.name) {
+  document.getElementById("dashboardName").textContent = user.name;
+}
+    
   function joinUrl(base, path) {
     return base.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
   }
