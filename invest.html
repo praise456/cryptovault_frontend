@@ -110,41 +110,61 @@
 
 <footer>&copy; 2025 Crypto Platform</footer>
 
-<script>
-  const API_BASE = "https://crypto-backend-t3bz.onrender.com";
-
-  document.getElementById("investForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const plan = document.getElementById("plan").value;
-    const amount = Number(document.getElementById("amount").value);
-    const msg = document.getElementById("investMsg");
+ <script>
+    const API_BASE = "https://crypto-backend-t3bz.onrender.com";
     const token = localStorage.getItem("token");
 
-    msg.textContent = "";
-
-    try {
-      const res = await fetch(`${API_BASE}/api/wallet/investments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-auth-token": token
-        },
-        body: JSON.stringify({ plan, amount })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        msg.style.color = "green";
-        msg.textContent = "Investment successful!";
-      } else {
-        msg.style.color = "red";
-        msg.textContent = data.msg || "Investment failed";
-      }
-    } catch (err) {
-      msg.textContent = "Network error";
+    // Redirect if not logged in
+    if (!token) {
+      alert("Please log in to continue");
+      window.location.href = "login.html";
     }
-  });
-</script>
 
+    document.getElementById('investForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const plan = document.getElementById('plan').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
+      const msgEl = document.getElementById('investMsg');
+      msgEl.textContent = "";
+
+      if (!plan || isNaN(amount) || amount <= 0) {
+        msgEl.textContent = "Please select a plan and enter a valid amount.";
+        msgEl.style.color = "red";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/wallet/investments`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": token
+          },
+          body: JSON.stringify({ plan, amount })
+        });
+
+        if (res.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          alert("Session expired, please log in again.");
+          return window.location.href = "login.html";
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          msgEl.textContent = data.msg || "Investment failed.";
+          msgEl.style.color = "red";
+        } else {
+          msgEl.textContent = data.msg || "Investment successful!";
+          msgEl.style.color = "green";
+          setTimeout(() => window.location.href = "dashboard.html", 1000);
+        }
+      } catch (err) {
+        console.error("Investment error:", err);
+        msgEl.textContent = "Network error. Please try again.";
+        msgEl.style.color = "red";
+      }
+    });
+  </script>
 </body>
 </html>
