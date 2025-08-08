@@ -32,6 +32,12 @@ async function safeJson(res) {
   }
 }
 
+/**
+ * Robust fetchWithTimeout
+ * - returns the fetch Response when successful
+ * - throws an Error with .type one of: 'timeout' | 'network' | 'http'
+ * - on 'http' errors attaches .status and .responseText
+ */
 async function fetchWithTimeout(url, options = {}, timeout = 10000) {
   const controller = new AbortController();
   const { signal } = controller;
@@ -93,14 +99,14 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         }, 15000);
+        console.log('Login status:', res.status);
         const data = await safeJson(res);
+        console.log('Login body:', data);
 
         if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
         showMsg("loginMsg", "Login successful. Redirecting...", false);
-        setTimeout(() => (window.location.href = "dashboard.html"), 300);
+        setTimeout(() => (window.location.href = "dashboard.html"), 700);
       } catch (err) {
         console.error("Login error:", err);
         if (err.type === 'timeout') showMsg("loginMsg", "Request timed out. Try again.");
@@ -142,14 +148,14 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ name, email, password }),
         }, 20000);
 
+        console.log('Register status:', res.status);
         const data = await safeJson(res);
+        console.log('Register body:', data);
 
         if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-        }
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
         showMsg("registerMsg", "Registration successful. Redirecting...", false);
-        setTimeout(() => (window.location.href = "dashboard.html"), 300);
+        setTimeout(() => (window.location.href = "dashboard.html"), 700);
       } catch (err) {
         console.error("Register error:", err);
         if (err.type === 'timeout') showMsg("registerMsg", "Request timed out. Try again.");
@@ -172,17 +178,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------- DASHBOARD & INVEST ----------
   if (window.location.pathname.includes("dashboard.html")) {
     const nameEl = document.getElementById("userName");
-    const token = localStorage.getItem("token");
 
+    const token = localStorage.getItem("token");
     if (!token) return (window.location.href = "login.html");
 
-    // ✅ Show name instantly from localStorage
-    const localUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (localUser.name && nameEl) {
-      nameEl.textContent = localUser.name;
-    }
-
-    // ✅ Then fetch latest from backend
     (async () => {
       try {
         const res = await fetchWithTimeout(`${API_BASE}/user`, {
@@ -221,9 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = "login.html";
       }
     })();
-  }
+  } // ✅ FIXED: closing brace added here
 
-  // ---------- INVEST ----------
   if (investmentForm) {
     investmentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -245,7 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify({ plan, amount }),
         }, 20000);
+        console.log('Invest status:', res.status);
         const data = await safeJson(res);
+        console.log('Invest body:', data);
 
         showMsg("investMsg", "Investment successful!", false);
         setTimeout(() => window.location.reload(), 1000);
@@ -267,7 +267,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---------- Wallet Connect ----------
   const connectBtn = document.getElementById("connectWalletBtn");
   if (connectBtn) connectBtn.addEventListener("click", connectWallet);
 });
