@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
         console.error("Login error:", err);
         if (err.type === 'timeout') showMsg("loginMsg", "Request timed out. Try again.");
-        else if (err.type === 'network') showMsg("loginMsg", "Network or CORS error. Check console.");
+        else if (err.type === 'network') showMsg("loginMsg", " Check Internet Connection");
         else if (err.type === 'http') {
           // try to parse server error message
           let bodyMsg = 'Login failed';
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("Register error:", err);
       if (err.type === 'timeout') showMsg("registerMsg", "Request timed out. Try again.");
-      else if (err.type === 'network') showMsg("registerMsg", "Network or CORS error. Check console.");
+      else if (err.type === 'network') showMsg("registerMsg", "Check Internet Connection");
       else if (err.type === 'http') {
         let bodyMsg = 'Registration failed';
         try {
