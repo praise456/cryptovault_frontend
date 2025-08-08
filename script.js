@@ -179,49 +179,55 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
   // ---------- DASHBOARD & INVEST ----------
-  if (window.location.pathname.includes("dashboard.html")) {
-    const token = localStorage.getItem("token");
-    if (!token) return (window.location.href = "login.html");
+ if (window.location.pathname.includes("dashboard.html")) {
+  // Get from localStorage first
+  const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const nameEl = document.getElementById("userName");
+  if (nameEl) nameEl.textContent = savedUser.name || "User";
 
-    (async () => {
-      try {
-        // NOTE: backend expects GET /user (not /api/user) per server code
-        const res = await fetchWithTimeout(`${API_BASE}/user`, {
-          headers: { "x-auth-token": token },
-        }, 15000);
-        console.log('User fetch status:', res.status);
-        const data = await safeJson(res);
-        console.log('User fetch body:', data);
+  const token = localStorage.getItem("token");
+  if (!token) return (window.location.href = "login.html");
 
-        if (!data || !data.email) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          return (window.location.href = "login.html");
-        }
+  (async () => {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/user`, {
+        headers: { "x-auth-token": token },
+      }, 15000);
+      const data = await safeJson(res);
 
-        const balanceEl = document.getElementById("balance");
-        if (balanceEl && typeof data.balance === "number") {
-          balanceEl.textContent = `$${data.balance.toFixed(2)}`;
-        }
-        const list = document.getElementById("investmentList");
-        if (list && Array.isArray(data.investments)) {
-          list.innerHTML = "";
-          data.investments.forEach(inv => {
-            const li = document.createElement("li");
-            const plan = inv.plan || "Unknown plan";
-            const amount = typeof inv.amount === "number" ? inv.amount : inv.amount || "N/A";
-            const roi = typeof inv.roi === "number" ? inv.roi : inv.roi || "N/A";
-            li.textContent = `${plan}: $${amount} ➜ ROI: $${roi}`;
-            list.appendChild(li);
-          });
-        }
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
+      if (!data || !data.email) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "login.html";
+        return (window.location.href = "login.html");
       }
-    })();
+
+      // Update name & store latest
+      if (nameEl) nameEl.textContent = data.name || savedUser.name || "User";
+      localStorage.setItem("user", JSON.stringify(data));
+
+      const balanceEl = document.getElementById("balance");
+      if (balanceEl && typeof data.balance === "number") {
+        balanceEl.textContent = `$${data.balance.toFixed(2)}`;
+      }
+
+      const list = document.getElementById("investmentList");
+      if (list && Array.isArray(data.investments)) {
+        list.innerHTML = "";
+        data.investments.forEach(inv => {
+          const li = document.createElement("li");
+          li.textContent = `${inv.plan || "Unknown"}: $${inv.amount || 0} ➜ ROI: $${inv.roi || 0}`;
+          list.appendChild(li);
+        });
+      }
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    }
+  })();
+}
+
 
     if (investmentForm) {
       investmentForm.addEventListener("submit", async (e) => {
