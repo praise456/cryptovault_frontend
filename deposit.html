@@ -37,13 +37,14 @@
 
   <script>
     const API_BASE = "https://crypto-backend-t3bz.onrender.com";
+    
     document.getElementById('depositForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const amount = document.getElementById('amount').value;
       const method = document.getElementById('method').value;
       const token = localStorage.getItem('token');
 
-      const res = await fetch('https://crypto-backend/api/user/deposit', {
+      const res = await fetch('${API_BASE}/api/user/deposit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
