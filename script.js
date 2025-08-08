@@ -179,11 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
   // ---------- DASHBOARD & INVEST ----------
- if (window.location.pathname.includes("dashboard.html")) {
-  // Get from localStorage first
-  const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+if (window.location.pathname.includes("dashboard.html")) {
   const nameEl = document.getElementById("userName");
-  if (nameEl) nameEl.textContent = savedUser.name || "User";
 
   const token = localStorage.getItem("token");
   if (!token) return (window.location.href = "login.html");
@@ -193,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetchWithTimeout(`${API_BASE}/user`, {
         headers: { "x-auth-token": token },
       }, 15000);
+
       const data = await safeJson(res);
 
       if (!data || !data.email) {
@@ -201,8 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return (window.location.href = "login.html");
       }
 
-      // Update name & store latest
-      if (nameEl) nameEl.textContent = data.name || savedUser.name || "User";
+      // ✅ Always update from backend
+      if (nameEl) nameEl.textContent = data.name || "User";
       localStorage.setItem("user", JSON.stringify(data));
 
       const balanceEl = document.getElementById("balance");
