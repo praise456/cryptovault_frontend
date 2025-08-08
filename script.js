@@ -222,6 +222,17 @@ document.addEventListener("DOMContentLoaded", () => {
     })();
   } // ✅ FIXED: closing brace added here
 
+
+  const transactionsList = document.getElementById("transactionsList");
+if (transactionsList && Array.isArray(data.transactions)) {
+  transactionsList.innerHTML = "";
+  data.transactions.slice(-5).forEach(tx => { // last 5 transactions
+    const li = document.createElement("li");
+    li.textContent = `${tx.type}: $${tx.amount} on ${new Date(tx.date).toLocaleDateString()}`;
+    transactionsList.appendChild(li);
+  });
+}
+
   if (investmentForm) {
     investmentForm.addEventListener("submit", async (e) => {
       e.preventDefault();
