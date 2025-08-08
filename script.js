@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     (async () => {
       try {
-        const res = await fetchWithTimeout(`${API_BASE}/user`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/user`, {
           headers: { "x-auth-token": token },
         }, 15000);
 
